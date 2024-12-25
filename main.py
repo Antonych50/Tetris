@@ -11,13 +11,15 @@ SCREEN_HEIGHT = 641
 BLOCK_SIZE = 32
 COLUMNS = SCREEN_WIDTH // BLOCK_SIZE
 ROWS = SCREEN_HEIGHT // BLOCK_SIZE
-FPS = 60
+FPS = 100
 
 # Цвета
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GRAY = (128, 128, 128)
+RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
 # Определение фигурок тетриса
 SHAPES = [
     [[1, 1, 1, 1]],  # I
@@ -43,6 +45,7 @@ class Tetris:
         self.level = 1
         self.falling_piece = None
         self.next_piece = self.get_random_shape()
+        self.falling_piece = self.next_piece
         self.game_over = False
 
     def get_random_shape(self):
@@ -68,11 +71,12 @@ class Tetris:
             )
 
     def draw_board(self):
+        #pass
         for i in range(ROWS):
             for j in range(COLUMNS):
                 if self.board[i][j]:
                     pygame.draw.rect(
-                        self.screen, WHITE,
+                        self.screen, BLUE,
                         (j * BLOCK_SIZE, i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
                     )
 
@@ -165,6 +169,16 @@ class Tetris:
         if self.check_collision():
             piece['shape'] = shape
 
+    def reflect_piece(self):
+        if not self.falling_piece:
+            return
+        piece = self.falling_piece
+        shape = piece['shape']
+        new_shape = shape[::-1]
+        piece['shape'] = new_shape
+        if self.check_collision():
+            piece['shape'] = shape
+
     def move_sideways(self, dx):
         if not self.falling_piece:
             return
@@ -186,6 +200,8 @@ class Tetris:
                         self.move_sideways(1)
                     elif event.key == K_UP:
                         self.rotate_piece()
+                    elif event.key == K_PAGEUP:
+                        self.reflect_piece()
                     elif event.key == K_DOWN:
                         self.move_down()
 
