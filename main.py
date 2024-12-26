@@ -11,7 +11,7 @@ SCREEN_HEIGHT = 641
 BLOCK_SIZE = 32
 COLUMNS = SCREEN_WIDTH // BLOCK_SIZE
 ROWS = SCREEN_HEIGHT // BLOCK_SIZE
-FPS = 1
+FPS = 3
 
 # Цвета
 BLACK = (0, 0, 0)
@@ -38,6 +38,7 @@ class Tetris:
         pygame.display.set_caption("Tetris")
         self.clock = pygame.time.Clock()
         self.reset()
+        self.fps = FPS
 
     def reset(self):
         self.board = [[0] * COLUMNS for _ in range(ROWS)]
@@ -90,7 +91,7 @@ class Tetris:
             for j in range(len(shape[i])):
                 if shape[i][j]:
                     pygame.draw.rect(
-                        self.screen, WHITE,
+                        self.screen, GREEN,
                         ((x + j) * BLOCK_SIZE, (y + i) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
                     )
 
@@ -107,6 +108,10 @@ class Tetris:
                         self.screen, GREEN,
                         (x + j * BLOCK_SIZE, y + i * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
                     )
+
+    def piece_speed(self, ds:int):
+        self.fps+= ds
+        if self.fps < 0: self.speed = 1
 
     def move_down(self):
         if not self.falling_piece:
@@ -188,7 +193,7 @@ class Tetris:
 
     def run(self):
         while True:
-            self.clock.tick(FPS)
+            self.clock.tick(self.fps)
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
@@ -205,6 +210,10 @@ class Tetris:
                     elif event.key == K_DOWN:
                         self.move_down()
                         print(f"{self.game_over}")
+                    elif event.key == K_f:
+                        self.piece_speed(+1)
+                    elif event.key == K_s:
+                        self.piece_speed(-1)
 
             if not self.game_over:
                 self.move_down()
