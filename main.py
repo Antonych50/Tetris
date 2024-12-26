@@ -1,7 +1,7 @@
 import random
 import sys
 import time
-
+import keyboard
 import pygame
 from pygame.locals import *
 
@@ -111,7 +111,7 @@ class Tetris:
 
     def piece_speed(self, ds:int):
         self.fps+= ds
-        if self.fps < 0: self.speed = 1
+        if self.fps < 0: self.speed = FPS
 
     def move_down(self):
         if not self.falling_piece:
@@ -214,7 +214,9 @@ class Tetris:
                         self.piece_speed(+1)
                     elif event.key == K_s:
                         self.piece_speed(-1)
-
+                    elif event.key == K_p:
+                        keyboard.wait("SPACE")
+                        
             if not self.game_over:
                 self.move_down()
                 #pass
