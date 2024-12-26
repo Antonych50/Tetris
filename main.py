@@ -11,7 +11,7 @@ SCREEN_HEIGHT = 641
 BLOCK_SIZE = 32
 COLUMNS = SCREEN_WIDTH // BLOCK_SIZE
 ROWS = SCREEN_HEIGHT // BLOCK_SIZE
-FPS = 100
+FPS = 1
 
 # Цвета
 BLACK = (0, 0, 0)
@@ -204,15 +204,17 @@ class Tetris:
                         self.reflect_piece()
                     elif event.key == K_DOWN:
                         self.move_down()
+                        print(f"{self.game_over}")
 
             if not self.game_over:
                 self.move_down()
-
+                #pass
             self.screen.fill(BLACK)
             self.draw_grid()
             self.draw_board()
             self.draw_falling_piece()
-            self.draw_next_piece()
+            #self.draw_next_piece
+            self.game_over = False
             pygame.display.update()
 
 if __name__ == "__main__":
