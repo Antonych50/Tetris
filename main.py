@@ -37,8 +37,9 @@ class Tetris:
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Tetris")
         self.clock = pygame.time.Clock()
+        self.fps_prev = FPS
+        self.fps_curr = FPS
         self.reset()
-        self.fps = FPS
 
     def reset(self):
         self.board = [[0] * COLUMNS for _ in range(ROWS)]
@@ -48,6 +49,7 @@ class Tetris:
         self.next_piece = self.get_random_shape()
         self.falling_piece = self.next_piece
         self.game_over = False
+        self.fps_curr = self.fps_prev
 
     def get_random_shape(self):
         shape = random.choice(SHAPES)
@@ -84,6 +86,7 @@ class Tetris:
     def draw_falling_piece(self):
         if not self.falling_piece:
             return
+        #if self.fps_curr == 150: self.fps_curr = self.fps_prev
         shape = self.falling_piece['shape']
         x = self.falling_piece['x']
         y = self.falling_piece['y']
@@ -97,6 +100,7 @@ class Tetris:
 
 
     def draw_next_piece(self):
+        #if self.fps_curr == 150: self.fps_curr = self.fps_prev
         next_piece = self.next_piece
         shape = next_piece['shape']
         x = next_piece['x'] * BLOCK_SIZE# + 160
@@ -121,6 +125,7 @@ class Tetris:
             self.falling_piece['y'] -= 1
             self.freeze_piece()
 
+
     def freeze_piece(self):
         if not self.falling_piece:
             return
@@ -144,6 +149,7 @@ class Tetris:
     def check_collision(self):
         if not self.falling_piece:
             return False
+        if self.fps_curr == 150: self.fps_curr = self.fps_prev
         piece = self.falling_piece
         shape = piece['shape']
         x = piece['x']
@@ -193,7 +199,7 @@ class Tetris:
 
     def run(self):
         while True:
-            self.clock.tick(self.fps)
+            self.clock.tick(self.fps_curr)
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
@@ -207,8 +213,10 @@ class Tetris:
                         self.rotate_piece()
                     elif event.key == K_PAGEUP:
                         self.reflect_piece()
-                    elif event.key == K_DOWN:
                         self.move_down()
+                    elif (event.key == K_DOWN) or (event.key == K_RETURN):
+                        self.fps_prev = self.fps_curr
+                        self.fps_curr = 150
                         print(f"{self.game_over}")
                     elif event.key == K_f:
                         self.piece_speed(+1)
