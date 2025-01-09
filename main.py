@@ -114,16 +114,20 @@ class Tetris:
                     )
 
     def piece_speed(self, ds:int):
-        self.fps+= ds
-        if self.fps < 0: self.speed = FPS
+        self.fps_curr += ds
+        if self.fps_curr < 0: self.speed = FPS
 
     def move_down(self):
         if not self.falling_piece:
             return
         self.falling_piece['y'] += 1
         if self.check_collision():
-            self.falling_piece['y'] -= 1
-            self.freeze_piece()
+            if self.falling_piece['y']==1:
+                self.reset()
+                self.fps_curr = self.fps_prev
+            else:
+                self.falling_piece['y'] -= 1
+                self.freeze_piece()
 
 
     def freeze_piece(self):
@@ -214,15 +218,17 @@ class Tetris:
                     elif event.key == K_PAGEUP:
                         self.reflect_piece()
                         self.move_down()
-                    elif (event.key == K_DOWN) or (event.key == K_RETURN):
+                    elif (event.key == K_DOWN) or (event.key == K_RETURN):#роняем фигурку
                         self.fps_prev = self.fps_curr
                         self.fps_curr = 150
-                        print(f"{self.game_over}")
-                    elif event.key == K_f:
-                        self.piece_speed(+1)
-                    elif event.key == K_s:
+                        self.game_over = True
+                        #print(f"{self.game_over}")
+
+                    elif event.key == K_f:#увеличиваем скорость
+                        self.piece_speed(1)
+                    elif event.key == K_s:#уменьшаем скорость
                         self.piece_speed(-1)
-                    elif event.key == K_p:
+                    elif event.key == K_w:
                         keyboard.wait("SPACE")
                         
             if not self.game_over:
