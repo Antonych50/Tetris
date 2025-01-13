@@ -1,9 +1,22 @@
+'''
+стрелка влево - шаг влево
+стрелка вправо - шаг вправо
+стрелка вверх - поворот на 90 градусов против часовой стрелки
+"r' - отражение от вертикалт
+"1" - увеличение скорости
+"2" - уменьшение скорости
+стрелка вниз, либо "Enter" - роняем фигуру
+"w" - пауза
+'''
+
 import random
 import sys
 import time
 import keyboard
 import pygame
 from pygame.locals import *
+from pygame.locals import QUIT
+
 
 # Константы
 SCREEN_WIDTH = 321
@@ -11,8 +24,8 @@ SCREEN_HEIGHT = 641
 BLOCK_SIZE = 32
 COLUMNS = SCREEN_WIDTH // BLOCK_SIZE
 ROWS = SCREEN_HEIGHT // BLOCK_SIZE
-FPS = 3
-
+FPS = 2
+CUSTOM_EVENT = USEREVENT + 1
 # Цвета
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -37,8 +50,7 @@ class Tetris:
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Tetris")
         self.clock = pygame.time.Clock()
-        self.fps_prev = FPS
-        self.fps_curr = FPS
+        self.fps_prev = self.fps_curr = FPS
         self.reset()
 
     def reset(self):
@@ -49,7 +61,8 @@ class Tetris:
         self.next_piece = self.get_random_shape()
         self.falling_piece = self.next_piece
         self.game_over = False
-        self.fps_curr = self.fps_prev
+        self.fps_curr = self.fps_prev = FPS
+        pygame.display.set_caption(f"Tetris: счёт {self.score}")
 
     def get_random_shape(self):
         shape = random.choice(SHAPES)
@@ -98,7 +111,6 @@ class Tetris:
                         ((x + j) * BLOCK_SIZE, (y + i) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
                     )
 
-
     def draw_next_piece(self):
         #if self.fps_curr == 150: self.fps_curr = self.fps_prev
         next_piece = self.next_piece
@@ -115,7 +127,7 @@ class Tetris:
 
     def piece_speed(self, ds:int):
         self.fps_curr += ds
-        if self.fps_curr < 0: self.speed = FPS
+        if self.fps_curr < 0: self.fps_curr = FPS
 
     def move_down(self):
         if not self.falling_piece:
@@ -125,10 +137,12 @@ class Tetris:
             if self.falling_piece['y']==1:
                 self.reset()
                 self.fps_curr = self.fps_prev
+                self.game_over = True
+                keyboard.read_event()#ждём нажатия любой клавиши клавиатуры начала новой игры
+                #pygame.event.post(pygame.event.Event(QUIT))
             else:
                 self.falling_piece['y'] -= 1
                 self.freeze_piece()
-
 
     def freeze_piece(self):
         if not self.falling_piece:
@@ -153,14 +167,16 @@ class Tetris:
     def check_collision(self):
         if not self.falling_piece:
             return False
-        if self.fps_curr == 150: self.fps_curr = self.fps_prev
+
         piece = self.falling_piece
         shape = piece['shape']
         x = piece['x']
         y = piece['y']
+        #if (self.falling_piece['y']==1) and (self.check_collision()):  pygame.event.post(pygame.event.Event(QUIT))
         for i in range(len(shape)):
             for j in range(len(shape[i])):
                 if shape[i][j] and (y + i >= ROWS or x + j < 0 or x + j >= COLUMNS or self.board[y + i][x + j]):
+                    if self.fps_curr == 150: self.fps_curr = self.fps_prev
                     return True
         return False
 
@@ -169,10 +185,12 @@ class Tetris:
         for i in range(ROWS):
             if all(self.board[i]):
                 rows_to_clear.append(i)
+                self.score+=10
+                pygame.display.set_caption(f"Tetris: счёт  {self.score}")
         for row in reversed(rows_to_clear):
             del self.board[row]
             self.board.insert(0, [0] * COLUMNS)
-        self.score += len(rows_to_clear) ** 2
+        #self.score += len(rows_to_clear) ** 2
 
     def rotate_piece(self):
         if not self.falling_piece:
@@ -218,17 +236,17 @@ class Tetris:
                     elif event.key == K_PAGEUP:
                         self.reflect_piece()
                         self.move_down()
-                    elif (event.key == K_DOWN) or (event.key == K_RETURN):#роняем фигурку
+                    elif (event.key==K_DOWN) or (event.key==K_RETURN):#роняем фигурку
                         self.fps_prev = self.fps_curr
                         self.fps_curr = 150
-                        self.game_over = True
+                        #self.game_over = True
                         #print(f"{self.game_over}")
 
-                    elif event.key == K_f:#увеличиваем скорость
+                    elif event.key == K_1:#увеличиваем скорость
                         self.piece_speed(1)
-                    elif event.key == K_s:#уменьшаем скорость
+                    elif event.key == K_2:#уменьшаем скорость
                         self.piece_speed(-1)
-                    elif event.key == K_w:
+                    elif event.key == K_w:#пауза
                         keyboard.wait("SPACE")
                         
             if not self.game_over:
